@@ -449,7 +449,16 @@
       <h1 class="intro-title">Data Mining - MEU</h1>
       <p class="intro-sub">"Muhtaç olduğun kudret damarlarındaki asil kanda mevcuttur."</p>
       <p class="intro-sub">-Mustafa Kemal Atatürk</p>
-      <button class="start-btn" onclick="startQuiz()">Başla</button>
+      <button class="start-btn" onclick="showChapters()">Başla</button>
+    </div>
+
+    <div class="intro-card" id="chapter-card" style="display: none;">
+      <h1 class="intro-title">Slayt Seçimi</h1>
+      <p class="intro-sub">Lütfen çözmek istediğiniz bölümü seçin:</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        <button class="start-btn" onclick="startQuiz(0, 40)">1. Slayt (1-40)</button>
+        <button class="start-btn" onclick="startQuiz(40, 80)">2. Slayt (41-80)</button>
+      </div>
     </div>
 
     <div class="top-bar" id="top-bar" style="display: none;">
@@ -496,7 +505,10 @@
         <div id="wrong-list"></div>
       </div>
 
-      <button class="restart-btn" onclick="restart()">Try Again</button>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button class="restart-btn" onclick="restart()">Tekrar Çöz</button>
+        <button class="restart-btn" style="background:#3F3F46;color:#E4E4E7;" onclick="goToMainMenu()">Ana Menü</button>
+      </div>
     </div>
   </div>
 
@@ -587,6 +599,7 @@
     let cur = 0, correct = 0, wrong = 0, answered = false;
     let userAnswers = [];
     let isReviewMode = false;
+    let startIndex = 0, endIndex = 80;
     const letters = ['A', 'B', 'C', 'D', 'E'];
     const topics = ["KDD Süreci","Veri Madenciliği İhtiyacı","Bilimsel Evrim","KDD Adımları","Veri Madenciliği Tanımı","Sınıflandırma ve Kümeleme","İş Zekası (BI)","Temel Sorunlar","Birliktelik Kuralları","Aşırı Öğrenme","Veritabanı Tarihçesi","Veri Analizi Hataları","Kümeleme","İleri Düzey Veriler","İş Zekası Yönetimi","Bilimsel Evrim","Sınıflandırma","Bilgi Çıkarımı","Temel Sorunlar","Çok Boyutlu Bakış","İstatistik vs VM","Ön İşleme Adımları","Uzman Sistemler","Karakterizasyon","Ayrımcılık Analizi","Veri Ambarları","Veri Bilimi Çapı","KDD Süreci","Örüntü Değerlendirme","Sınıflandırma vs Regresyon","Veritabanı Sistemleri","Aykırı Değer Tespiti","Uzamsal Veriler","OLAP","Veri Bilimi","Sınıflandırma","Veri Kalitesi","Veri Akışları","Veri Madenciliği ROI","Kümeleme", "Veri Seti Tipleri", "Nitelik Tipleri", "Aralık vs Oran (Interval/Ratio)", "Yapılandırılmış Veri", "Ortanca (Median)", "Çarpıklık (Skewness)", "Gruplandırılmış Medyan", "Medyan Sınıfı Değişimi", "Aykırı Değer Analizi", "Standart Sapma", "Kırpılmış Ortalama (Trimmed)", "Ağırlıklı Ortalama", "Oran vs Aralık Verisi", "Kosinüs Benzerliği", "Uzaklık Ölçütleri", "Jaccard Katsayısı", "Aykırı Değer Analizi", "Supremum Uzaklığı", "Veri Normalizasyonu", "Merkezi Eğilim Ölçüleri", "Seyreklik ve Boyutsallık", "Nominal Nitelikler", "Simetrik vs Asimetrik İkili", "Minkowski Uzaklığı", "Çarpıklık (Skewness)", "Jaccard Katsayısı Uygulaması", "Uç Değer ve Trimmed Mean", "Class Genişliği ve Medyan", "Kutu Grafiğinde (Boxplot) Kesikli Aralıklar", "Kosinüs ve Ortogonallik", "Örneklem vs Evren Varyansı", "İşlemlerde Jaccard Benzerliği", "Çözünürlük (Resolution)", "Boyutsallık Laneti (Curse of Dimensionality)", "Negatif Çarpıklık", "Nadir Olaylarda Benzerlik", "Büyüklük/Ölçekleme ve Mesafe", "Kartiller ve Yoğunluk", "Unit Norm Normalize İşlemi", "Q-Q Grafik Anlamı"];
 
@@ -598,10 +611,13 @@
       document.getElementById('q-card').classList.add('fade-in');
 
       const slideEl = document.getElementById('q-slide');
-      slideEl.textContent = cur < 40 ? "1. Slayt" : "2. Slayt";
+      slideEl.textContent = startIndex === 0 ? "1. Slayt" : "2. Slayt";
       
-      document.getElementById('q-counter').textContent = `Question ${cur + 1} of ${qs.length}`;
-      document.getElementById('q-label').textContent = `Question ${cur + 1}`;
+      const totalInChapter = endIndex - startIndex;
+      const curInChapter = cur - startIndex + 1;
+
+      document.getElementById('q-counter').textContent = `Question ${curInChapter} of ${totalInChapter}`;
+      document.getElementById('q-label').textContent = `Question ${curInChapter}`;
       document.getElementById('q-text').textContent = q.q;
 
       const codeEl = document.getElementById('q-code');
@@ -637,19 +653,19 @@
         if (userAnswers[cur] === q.ans) {
           btns[userAnswers[cur]].classList.add('correct-ans');
           fb.className = 'feedback-box show ok';
-          fb.innerHTML = '<strong>Doğru!</strong> ' + q.fb;
+          fb.innerHTML = '<strong>Doğru!</strong> Kral yapıyosun bu sporu devam! <br><br>' + q.fb;
         } else {
           btns[userAnswers[cur]].classList.add('wrong-ans');
           btns[q.ans].classList.add('correct-ans');
           fb.className = 'feedback-box show no';
-          fb.innerHTML = '<strong>Yanlış.</strong> Doğru cevap: <strong>' + letters[q.ans] + '</strong>. ' + q.fb;
+          fb.innerHTML = '<strong>Yanlış.</strong> Olsun kardeşim devam! <br><br> Doğru cevap: <strong>' + letters[q.ans] + '</strong>.<br>' + q.fb;
         }
         nb.className = 'next-btn show';
       } else {
         nb.className = 'next-btn';
       }
 
-      document.getElementById('prog').style.width = ((cur + 1) / qs.length * 100) + '%';
+      document.getElementById('prog').style.width = (curInChapter / totalInChapter * 100) + '%';
     }
 
     function pick(i) {
@@ -664,33 +680,36 @@
       if (i === q.ans) {
         btns[i].classList.add('correct-ans');
         fb.className = 'feedback-box show ok';
-        fb.innerHTML = '<strong>Correct!</strong> ' + q.fb;
+        fb.innerHTML = '<strong>Doğru!</strong> Kral yapıyosun bu sporu devam! <br><br>' + q.fb;
         correct++;
         document.getElementById('pill-c').textContent = '✓ ' + correct;
       } else {
         btns[i].classList.add('wrong-ans');
         btns[q.ans].classList.add('correct-ans');
         fb.className = 'feedback-box show no';
-        fb.innerHTML = '<strong>Wrong.</strong> The correct answer is <strong>' + letters[q.ans] + '</strong>. ' + q.fb;
+        fb.innerHTML = '<strong>Yanlış.</strong> Olsun kardeşim devam! <br><br> Doğru cevap: <strong>' + letters[q.ans] + '</strong>.<br>' + q.fb;
         wrong++;
         document.getElementById('pill-w').textContent = '✗ ' + wrong;
       }
 
       const nb = document.getElementById('next-btn');
       nb.className = 'next-btn show';
-      nb.textContent = cur < qs.length - 1 ? 'Next →' : 'See Results →';
+      const totalInChapter = endIndex - startIndex;
+      const curInChapter = cur - startIndex + 1;
+      nb.textContent = curInChapter < totalInChapter ? 'Next →' : 'See Results →';
     }
 
     function nextQ() {
       cur++;
-      if (cur >= qs.length) { showResult(); return; }
+      if (cur >= endIndex) { showResult(); return; }
       render();
     }
 
     function showResult() {
       document.getElementById('q-card').style.display = 'none';
       document.getElementById('result-card').classList.add('show');
-      const pct = Math.round(correct / qs.length * 100);
+      const totalInChapter = endIndex - startIndex;
+      const pct = Math.round(correct / totalInChapter * 100);
       const scoreEl = document.getElementById('res-score');
       scoreEl.textContent = pct + '%';
       if (pct >= 80) scoreEl.style.color = '#4ADE80';
@@ -713,14 +732,17 @@
       if (wrong > 0) {
         anBox.style.display = 'block';
         qs.forEach((q, idx) => {
-          if (userAnswers[idx] !== null && userAnswers[idx] !== q.ans) {
-            wList.innerHTML += `<div class="wrong-item">
-                <div class="wrong-info">
-                  <div class="w-qnum">Soru ${idx + 1}</div>
-                  <div class="w-topic">Konu: ${topics[idx]}</div>
-                </div>
-                <button class="w-btn" onclick="reviewQ(${idx})">Soruyu Gör</button>
-              </div>`;
+          if (idx >= startIndex && idx < endIndex) {
+            if (userAnswers[idx] !== null && userAnswers[idx] !== q.ans) {
+              const localNum = idx - startIndex + 1;
+              wList.innerHTML += `<div class="wrong-item">
+                  <div class="wrong-info">
+                    <div class="w-qnum">Soru ${localNum}</div>
+                    <div class="w-topic">Konu: ${topics[idx]}</div>
+                  </div>
+                  <button class="w-btn" onclick="reviewQ(${idx})">Soruyu Gör</button>
+                </div>`;
+            }
           }
         });
       } else {
@@ -737,7 +759,7 @@
     }
 
     function restart() {
-      cur = 0; correct = 0; wrong = 0;
+      cur = startIndex; correct = 0; wrong = 0;
       userAnswers = new Array(qs.length).fill(null);
       isReviewMode = false;
       document.getElementById('pill-c').textContent = '✓ 0';
@@ -747,10 +769,29 @@
       render();
     }
 
-    function startQuiz() {
+    function showChapters() {
+      document.getElementById('intro-card').style.display = 'none';
+      document.getElementById('chapter-card').style.display = 'block';
+    }
+
+    function goToMainMenu() {
+      document.getElementById('result-card').classList.remove('show');
+      document.getElementById('top-bar').style.display = 'none';
+      document.getElementById('progress-wrap').style.display = 'none';
+      document.getElementById('q-card').style.display = 'none';
+      document.getElementById('chapter-card').style.display = 'block';
+    }
+
+    function startQuiz(sIndex, eIndex) {
+      startIndex = sIndex;
+      endIndex = eIndex;
+      cur = startIndex;
+      correct = 0; wrong = 0;
       userAnswers = new Array(qs.length).fill(null);
       isReviewMode = false;
-      document.getElementById('intro-card').style.display = 'none';
+      document.getElementById('chapter-card').style.display = 'none';
+      document.getElementById('pill-c').textContent = '✓ 0';
+      document.getElementById('pill-w').textContent = '✗ 0';
       document.getElementById('top-bar').style.display = 'flex';
       document.getElementById('progress-wrap').style.display = 'block';
       document.getElementById('q-card').style.display = 'block';
