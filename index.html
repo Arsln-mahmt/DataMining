@@ -219,7 +219,7 @@
 
     .actions {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
     }
 
     .next-btn {
@@ -483,7 +483,8 @@
       <div class="options" id="options"></div>
       <div class="feedback-box" id="feedback"></div>
       <div class="actions">
-        <button class="next-btn" id="next-btn" onclick="nextQ()">Next <span>→</span></button>
+        <button class="next-btn" id="prev-btn" onclick="prevQ()">← Önceki</button>
+        <button class="next-btn" id="next-btn" onclick="nextQ()">İleri →</button>
       </div>
     </div>
 
@@ -760,6 +761,9 @@
       document.getElementById('feedback').className = 'feedback-box';
       document.getElementById('feedback').innerHTML = '';
       
+      const pb = document.getElementById('prev-btn');
+      pb.className = (cur > startIndex) ? 'next-btn show' : 'next-btn';
+
       const nb = document.getElementById('next-btn');
       if (isReviewMode) {
         nb.onclick = showResult;
@@ -819,7 +823,14 @@
       nb.className = 'next-btn show';
       const totalInChapter = endIndex - startIndex;
       const curInChapter = cur - startIndex + 1;
-      nb.textContent = curInChapter < totalInChapter ? 'Next →' : 'See Results →';
+      nb.textContent = curInChapter < totalInChapter ? 'İleri →' : 'Sonuçları Gör →';
+    }
+
+    function prevQ() {
+      if (cur > startIndex) {
+        cur--;
+        render();
+      }
     }
 
     function nextQ() {
