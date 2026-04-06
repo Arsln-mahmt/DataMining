@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Mining Quiz</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #121212;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .quiz-wrap {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-counter {
+      font-size: 13px;
+      color: #A1A1AA;
+      font-weight: 500;
+    }
+
+    .score-pill {
+      display: flex;
+      gap: 10px;
+    }
+
+    .pill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    .pill.c {
+      background: #064E3B;
+      color: #34D399;
+    }
+
+    .pill.w {
+      background: #7F1D1D;
+      color: #F87171;
+    }
+
+    .progress-wrap {
+      background: #3F3F46;
+      border-radius: 99px;
+      height: 5px;
+      margin-bottom: 1.75rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #818CF8;
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .card {
+      background: #1E1E1E;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 2rem 2rem 1.5rem;
+    }
+
+    .q-slide {
+      font-size: 13px;
+      font-weight: 700;
+      color: #818CF8;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .q-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #A1A1AA;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .q-text {
+      font-size: 17px;
+      font-weight: 500;
+      color: #F4F4F5;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+    }
+
+    .q-code {
+      background: #27272A;
+      border: 1px solid #3F3F46;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #A78BFA;
+      margin-bottom: 1.25rem;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 1.5rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #E4E4E7;
+      background: #27272A;
+      text-align: left;
+      width: 100%;
+      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+    }
+
+    .option:hover:not(:disabled) {
+      background: #3F3F46;
+      border-color: #818CF8;
+      transform: translateX(3px);
+    }
+
+    .option .ltr {
+      background: #18181B;
+      color: #A1A1AA;
+      font-size: 12px;
+      font-weight: 600;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .option.correct-ans {
+      background: #064E3B;
+      border-color: #10B981;
+      color: #D1FAE5;
+    }
+
+    .option.correct-ans .ltr {
+      background: #10B981;
+      color: #064E3B;
+    }
+
+    .option.wrong-ans {
+      background: #7F1D1D;
+      border-color: #EF4444;
+      color: #FEE2E2;
+    }
+
+    .option.wrong-ans .ltr {
+      background: #EF4444;
+      color: #7F1D1D;
+    }
+
+    .option:disabled {
+      cursor: default;
+      transform: none;
+    }
+
+    .feedback-box {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .feedback-box.show {
+      display: block;
+    }
+
+    .feedback-box.ok {
+      background: #064E3B;
+      border-left: 3px solid #10B981;
+      color: #D1FAE5;
+    }
+
+    .feedback-box.no {
+      background: #7F1D1D;
+      border-left: 3px solid #EF4444;
+      color: #FEE2E2;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .next-btn {
+      display: none;
+      background: #818CF8;
+      color: #18181B;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .next-btn:hover {
+      background: #6366F1;
+      transform: translateY(-1px);
+    }
+
+    .next-btn.show {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .intro-card {
+      background: #1E1E1E;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .intro-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: #F4F4F5;
+      margin-bottom: 1rem;
+    }
+
+    .intro-sub {
+      font-size: 16px;
+      color: #A1A1AA;
+      margin-bottom: 0.5rem;
+      font-style: italic;
+    }
+
+    .intro-sub:last-of-type {
+      margin-bottom: 2.5rem;
+    }
+
+    .start-btn {
+      background: #818CF8;
+      color: #18181B;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .start-btn:hover {
+      background: #6366F1;
+      transform: translateY(-2px);
+    }
+
+    .result-card {
+      background: #1E1E1E;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      display: none;
+    }
+
+    .result-card.show {
+      display: block;
+    }
+
+    .big-score {
+      font-size: 56px;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: #F4F4F5;
+    }
+
+    .result-sub {
+      font-size: 14px;
+      color: #A1A1AA;
+      margin-bottom: 0.5rem;
+    }
+
+    .result-msg {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #F4F4F5;
+    }
+
+    .result-detail {
+      font-size: 13px;
+      color: #A1A1AA;
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
+    }
+
+    .analysis-box {
+      margin-top: 1.5rem;
+      text-align: left;
+      border-top: 1px solid #333;
+      padding-top: 1.5rem;
+      display: none;
+    }
+    .analysis-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #F4F4F5;
+      margin-bottom: 1rem;
+    }
+    .wrong-item {
+      background: #27272A;
+      border: 1px solid #3F3F46;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .wrong-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .w-qnum {
+      font-size: 14px;
+      color: #F4F4F5;
+      font-weight: 500;
+    }
+    .w-topic {
+      font-size: 12px;
+      color: #A1A1AA;
+    }
+    .w-btn {
+      background: #3F3F46;
+      color: #E4E4E7;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .w-btn:hover {
+      background: #52525B;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat .n {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .stat .l {
+      font-size: 12px;
+      color: #A1A1AA;
+    }
+
+    .stat.c .n {
+      color: #34D399;
+    }
+
+    .stat.w .n {
+      color: #F87171;
+    }
+
+    .restart-btn {
+      background: #818CF8;
+      color: #18181B;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .restart-btn:hover {
+      background: #6366F1;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="quiz-wrap">
+    <div class="intro-card" id="intro-card">
+      <h1 class="intro-title">Data Mining - MEU</h1>
+      <p class="intro-sub">"Muhtaç olduğun kudret damarlarındaki asil kanda mevcuttur."</p>
+      <p class="intro-sub">-Mustafa Kemal Atatürk</p>
+      <button class="start-btn" onclick="startQuiz()">Başla</button>
+    </div>
+
+    <div class="top-bar" id="top-bar" style="display: none;">
+      <span class="q-counter" id="q-counter">Question 1 of 40</span>
+      <div class="score-pill">
+        <span class="pill c" id="pill-c">✓ 0</span>
+        <span class="pill w" id="pill-w">✗ 0</span>
+      </div>
+    </div>
+    <div class="progress-wrap" id="progress-wrap" style="display: none;">
+      <div class="progress-fill" id="prog" style="width:2.5%"></div>
+    </div>
+
+    <div class="card fade-in" id="q-card" style="display: none;">
+      <div class="q-slide" id="q-slide"></div>
+      <div class="q-label" id="q-label">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-code" id="q-code" style="display:none"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback-box" id="feedback"></div>
+      <div class="actions">
+        <button class="next-btn" id="next-btn" onclick="nextQ()">Next <span>→</span></button>
+      </div>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="big-score" id="res-score"></div>
+      <div class="result-sub">Final Score</div>
+      <div class="stat-row">
+        <div class="stat c">
+          <div class="n" id="res-c">0</div>
+          <div class="l">Correct</div>
+        </div>
+        <div class="stat w">
+          <div class="n" id="res-w">0</div>
+          <div class="l">Wrong</div>
+        </div>
+      </div>
+      <div class="result-msg" id="res-msg"></div>
+      <div class="result-detail" id="res-detail"></div>
+
+      <div class="analysis-box" id="analysis-box">
+        <div class="analysis-title">Hatalı Soruların Analizi</div>
+        <div id="wrong-list"></div>
+      </div>
+
+      <button class="restart-btn" onclick="restart()">Try Again</button>
+    </div>
+  </div>
+
+  <script>
+    const qs = [
+      { q: "What does KDD stand for in the context of data mining?", opts: ["Key Data Discovery", "Knowledge Discovery in Databases", "Knowledge-Driven Data Design", "Key Driven Database"], ans: 1, fb: "KDD = Knowledge Discovery in Databases — the full formal name for the data mining process." },
+      { q: "Which statement best explains why data mining became necessary?", opts: ["Databases became too expensive to maintain", "SQL queries became too slow", "Data grew explosively but converting it to knowledge remained limited", "Data decreased with the spread of the internet"], ans: 2, fb: "The slogan: 'We are drowning in data, but starving for knowledge!' — automated analysis of massive datasets became essential." },
+      { q: "Which option lists the evolution of science in the correct chronological order?", opts: ["Theoretical → Empirical → Computational → Data Science", "Empirical → Theoretical → Computational → Data Science", "Computational → Empirical → Theoretical → Data Science", "Empirical → Computational → Theoretical → Data Science"], ans: 1, fb: "Before 1600: Empirical | 1600–1950s: Theoretical | 1950–1990s: Computational | 1990–now: Data Science." },
+      { q: "Which option correctly represents the KDD process in order?", opts: ["Mining → Cleaning → Evaluation → Knowledge", "Cleaning → Mining → Integration → Knowledge", "Integration → Cleaning → Selection → Mining → Evaluation → Knowledge", "Selection → Mining → Cleaning → Knowledge"], ans: 2, fb: "Correct KDD pipeline: Data Integration → Cleaning → Selection → Data Mining → Pattern Evaluation → Knowledge." },
+      { q: "Which of the following is definitely NOT considered data mining?", opts: ["Analyzing customer purchase patterns", "Building a disease risk prediction model", "Running a simple SQL SELECT query", "Performing customer segmentation with clustering"], ans: 2, fb: "Data mining extracts non-trivial, previously unknown patterns. A simple SELECT query just retrieves known data — no discovery involved." },
+      { q: "What is the fundamental difference between Classification and Cluster Analysis?", opts: ["Classification works with large data; Clustering with small data", "Classification is supervised (labels known); Clustering is unsupervised (labels unknown)", "Clustering always produces more accurate results", "Classification only works with numerical data"], ans: 1, fb: "Classification = supervised learning (predefined classes). Cluster Analysis = unsupervised learning (groups emerge naturally from the data)." },
+      { q: "In the Business Intelligence pyramid, which layer is at the very top?", opts: ["Data Mining — Data Analyst", "Data Exploration — DBA", "Decision Making — End User", "Data Presentation — Business Analyst"], ans: 2, fb: "BI pyramid (bottom → top): Data Sources → Preprocessing → Exploration → Data Mining → Presentation → Decision Making. End User is at the top." },
+      { q: "Which of the following is NOT a major issue in data mining?", opts: ["Scalability", "Privacy and Security", "Overfitting", "Rising cost of database licenses"], ans: 3, fb: "The five major issues: Data Quality, Scalability, Privacy & Security, Interpretability, Overfitting. License cost is not one of them." },
+      { q: "Interpret the association rule below:", code: "Diapers → Beer  [support = 0.5%,  confidence = 75%]", opts: ["75% of customers with babies drink beer", "In 0.5% of all transactions diapers & beer appear together; 75% of diaper transactions also contain beer", "75% of beer buyers also buy diapers", "In every 100 transactions, 75 contain both items"], ans: 1, fb: "Support = how often the itemset appears overall (0.5%). Confidence = given diapers are bought, how often beer is also bought (75%)." },
+      { q: "A model performs perfectly on training data but fails on new unseen data. What problem is this?", opts: ["Scalability", "Data Quality", "Overfitting", "Interpretability"], ans: 2, fb: "Overfitting: the model memorizes training data rather than learning generalizable patterns — poor performance on real-world data." },
+      { q: "Which decade saw the emergence of data mining and data warehousing in database history?", opts: ["1960s", "1970s", "1980s", "1990s"], ans: 3, fb: "1990s: data mining, data warehousing, multimedia databases, and web databases all emerged. 1980s had RDBMS; 1970s had relational models." },
+      { q: "What does the term 'data dredging' imply?", opts: ["A highly accurate mining technique", "Often misleading or carelessly performed data analysis", "A method for cleaning large datasets", "A synonym for business intelligence"], ans: 1, fb: "Data dredging = a negative term for careless analysis — searching for patterns without a proper hypothesis, often producing spurious results." },
+      { q: "What is the core principle behind Cluster Analysis?", opts: ["Minimize intra-class similarity, maximize inter-class similarity", "Maximize intra-class similarity, minimize inter-class similarity", "Maximize both intra-class and inter-class similarity", "Minimize both intra-class and inter-class similarity"], ans: 1, fb: "Clustering goal: items within the same cluster should be as similar as possible (maximize intra-class), while items in different clusters should be as different as possible (minimize inter-class)." },
+      { q: "Which of these is an 'advanced data set' type that goes beyond standard relational databases?", opts: ["A standard SQL table", "A relational DBMS", "Spatiotemporal data and social networks", "A simple flat CSV file"], ans: 2, fb: "Advanced data sets: data streams, time-series, sequence data, graphs, social networks, spatiotemporal data, multimedia, text, and the World Wide Web." },
+      { q: "In the BI pyramid, who manages Data Preprocessing, Integration and Data Warehouses?", opts: ["End User", "Business Analyst", "Data Analyst", "DBA (Database Administrator)"], ans: 3, fb: "The DBA sits at the base of the BI pyramid — responsible for data sources, preprocessing, integration, and data warehouse maintenance." },
+      { q: "What primarily defines the 'Data Science' era (1990–now)?", opts: ["Going back to pure observation without models", "Internet + cheap petabyte storage + data mining tools enabling knowledge from data floods", "Building only theoretical mathematical models", "Running physical simulations on supercomputers"], ans: 1, fb: "Data Science era: flood of data from instruments/simulations + cheap petabyte storage + internet access = data mining became a major new scientific challenge." },
+      { q: "Which data mining function is best suited for credit card fraud detection?", opts: ["Cluster Analysis", "Association Rule Mining", "Classification", "Data Cube construction"], ans: 2, fb: "Classification assigns items to predefined categories. Fraud detection labels transactions as 'fraud' or 'legitimate' — a classic supervised classification task." },
+      { q: "Which of the following best describes 'knowledge extraction' as a data mining synonym?", opts: ["Carelessly performed analysis to find any pattern", "Extracting useful information and patterns from large datasets", "Simple database query processing", "Storing cleaned data in a warehouse"], ans: 1, fb: "Knowledge extraction = systematically extracting useful patterns and information from large datasets — a core definition of data mining." },
+      { q: "Why is 'interpretability' a major issue in data mining?", opts: ["Because mining results are always wrong", "Because complex models like neural networks are hard to understand and explain", "Because mining cannot handle large datasets", "Because classification algorithms never converge"], ans: 1, fb: "Complex models (neural nets, deep learning) act as black boxes — highly accurate but humans cannot easily explain why a specific decision was made." },
+      { q: "In the multi-dimensional view of data mining, which of these is a 'technique'?", opts: ["Retail and banking applications", "Classification and clustering functions", "Machine learning, statistics, OLAP, and visualization", "Credit card fraud detection"], ans: 2, fb: "Multi-dimensional view: (1) Data to mine, (2) Knowledge/functions (classification, clustering…), (3) Techniques (ML, statistics, OLAP, visualization), (4) Applications (retail, banking…)." },
+      { q: "A statistician argues that data mining is merely applied statistics. Based on the chapter's perspective, what is the strongest counterargument?", opts: ["Data mining uses only databases, while statistics uses only mathematical models.", "Data mining integrates techniques from multiple fields—databases, statistics, machine learning, and pattern recognition—and addresses scalability to massive datasets that traditional statistics was not designed for.", "Statistics cannot handle any form of pattern recognition, so it is irrelevant to data mining.", "Data mining replaced statistics entirely after the 1990s.", "Statistics is descriptive only, whereas data mining is exclusively predictive."], ans: 1, fb: "Data mining incorporates multiple fields to handle massive datasets." },
+      { q: "A web mining project follows the framework described in the chapter. After data cube construction and before applying mining algorithms, which step must occur?", opts: ["Data cleaning", "Presentation of mining results", "Data selection for data mining", "Data integration from multiple sources", "Knowledge-base storage"], ans: 2, fb: "Data selection occurs before applying mining algorithms." },
+      { q: "A company uses a deductive expert system to derive conclusions from a predefined rule base. According to the chapter, why does this NOT qualify as data mining?", opts: ["Expert systems are too slow for large-scale data.", "Expert systems apply existing rules deductively rather than discovering new, implicit patterns from data.", "Expert systems can only process text data.", "Expert systems use clustering, which is not a data mining function.", "Expert systems were invented before the 1990s and are therefore outdated."], ans: 1, fb: "Data mining is about discovering new rules, not applying existing ones deductively." },
+      { q: "Consider a scenario: a telecom company wants to summarize the general characteristics of customers who churned last quarter. This task is BEST described as:", opts: ["Classification", "Clustering", "Characterization", "Discrimination", "Regression"], ans: 2, fb: "Characterization involves summarizing the general characteristics of a target class of data." },
+      { q: "The same telecom company now wants to compare churned customers against loyal customers to identify distinguishing features. This task shifts from Q4 to:", opts: ["Association analysis", "Outlier analysis", "Regression", "Discrimination", "Clustering"], ans: 3, fb: "Discrimination is comparing the target class with one or a set of contrasting classes." },
+      { q: "A data warehouse stores metadata, summary data, raw data, and data for mining. Which of the following BEST distinguishes a data warehouse from an operational database?", opts: ["A data warehouse supports real-time transaction processing, while an operational database supports analytical queries.", "A data warehouse is subject-oriented, integrated, time-variant, and non-volatile, designed for analytical processing rather than daily transactions.", "An operational database stores more data than a data warehouse.", "A data warehouse uses only flat files, while databases use relational tables.", "There is no meaningful difference; both serve identical purposes."], ans: 1, fb: "Data warehouses are specifically designed for OLAP (analytical processing) instead of OLTP (transactions)." },
+      { q: "In the evolution of sciences, the 'data science' era (1990–present) emerged primarily because of:", opts: ["The invention of the relational data model in the 1970s.", "The development of deductive expert systems in the 1980s.", "The flood of data from scientific instruments, affordable petabyte-scale storage, and universal internet accessibility.", "The shift from empirical to theoretical science before 1600.", "The abandonment of computational simulation methods."], ans: 2, fb: "The explosion of data from varied sources and storage drove the data science era." },
+      { q: "A machine learning researcher describes the KDD process differently from a database researcher. From the ML/statistics view, which of the following is part of the POST-processing stage?", opts: ["Normalization and feature selection", "Dimension reduction and outlier analysis", "Pattern evaluation, selection, interpretation, and visualization", "Association rule discovery and clustering", "Data integration from heterogeneous sources"], ans: 2, fb: "Post-processing involves taking the mined patterns and evaluating, selecting, or interpreting them." },
+      { q: "An analyst mines an e-commerce dataset and discovers thousands of association rules. Many have high support and confidence but describe trivially obvious purchasing patterns (e.g., 'people who buy a phone charger also buy a phone'). This problem relates to which knowledge evaluation criterion?", opts: ["Accuracy", "Timeliness", "Novelty", "Coverage", "Scalability"], ans: 2, fb: "Novelty implies the patterns should be previously unknown rather than trivially obvious." },
+      { q: "Classification and regression are both predictive mining functions. The FUNDAMENTAL difference between them is:", opts: ["Classification uses supervised learning while regression uses unsupervised learning.", "Classification predicts categorical (discrete) labels while regression predicts continuous numerical values.", "Regression can only be applied to time-series data, while classification applies to all data types.", "Classification requires a data warehouse, while regression operates on raw databases.", "Regression always uses neural networks, while classification always uses decision trees."], ans: 1, fb: "Classification targets discrete categorical labels; regression targets continuous continuous values." },
+      { q: "In the 1960s, database technology was characterized by data collection and the creation of IMS and network DBMS. The relational model emerged in the 1970s. What was the PRIMARY limitation of the 1960s systems that the relational model addressed?", opts: ["The 1960s systems could not store any data at all.", "Hierarchical and network models had rigid, complex data access paths, while the relational model offered flexible, declarative querying.", "The 1960s systems were designed exclusively for data mining.", "Network DBMS could only handle multimedia data.", "IMS systems were too fast and needed to be slowed down."], ans: 1, fb: "Relational models replaced the rigid navigational access of early hierarchical and network systems." },
+      { q: "A researcher proposes using outlier detection on financial transactions. One method flags any transaction exceeding 3 standard deviations from the mean. Another method builds a classification model trained on known fraud and non-fraud examples. Which comparison is MOST accurate?", opts: ["Both methods are identical in approach and reliability.", "The statistical method is unsupervised and may flag legitimate high-value transactions; the classification method is supervised and requires labeled training data, potentially being more precise but dependent on training quality.", "The statistical method requires labeled data, while the classification method does not.", "The classification method always outperforms the statistical method regardless of data quality.", "Neither method can detect outliers in financial data effectively."], ans: 1, fb: "Classification is supervised (requires labels), statistical outlier detection is unsupervised." },
+      { q: "The chapter lists several types of advanced data that can be mined. A researcher working with GPS-tagged wildlife tracking data over multiple years would classify this data PRIMARILY as:", opts: ["Text database", "Multimedia database", "Spatiotemporal data", "Transactional data", "Object-relational database"], ans: 2, fb: "GPS-tagged tracking data contains both space (spatial) and time (temporal) dimensions." },
+      { q: "An OLAP cube allows users to analyze sales data across time, product, and region dimensions. If a user drills down from yearly to quarterly to monthly sales in one region, which capability of OLAP is being utilized?", opts: ["Data mining classification", "Multidimensional drill-down analysis", "Association rule discovery", "Cluster analysis across dimensions", "ETL transformation processing"], ans: 1, fb: "Moving from yearly to monthly data is a 'drill-down' operation in an OLAP cube." },
+      { q: "The chapter states that computational science (1950s–1990s) traditionally meant simulation, which arose from the inability to find closed-form solutions for complex models. Data science differs because it is driven by:", opts: ["The desire to find closed-form analytical solutions.", "The need to replace all theoretical models with empirical observation.", "The massive volume of data requiring new methods of management, query, and mining beyond simulation.", "The elimination of computational approaches in favor of pure theory.", "The decline of internet accessibility after 2000."], ans: 2, fb: "Data science is characterized by the explosion of data requiring new mining and management techniques." },
+      { q: "A bank develops a model to predict whether a loan applicant will default. The model uses decision trees trained on historical loan data with known outcomes. This is an example of:", opts: ["Clustering, because it groups applicants", "Association analysis, because it links loan features to outcomes", "Classification, because it assigns applicants to predefined categories (default/non-default) using supervised learning", "Characterization, because it summarizes applicant profiles", "Outlier analysis, because it identifies unusual applicants"], ans: 2, fb: "Supervised learning with predefined outcomes (default vs. non-default) is classification." },
+      { q: "Which of the following scenarios BEST illustrates why data quality is identified as a major issue in data mining?", opts: ["A model runs slowly on a small, clean dataset.", "A clustering algorithm produces meaningful groups from a well-curated dataset.", "A classification model trained on records with missing income values and inconsistent address formats produces unreliable predictions.", "An association rule has very high support and confidence.", "A data warehouse successfully integrates data from three clean sources."], ans: 2, fb: "'Garbage in, garbage out.' Poor data quality leads to unreliable mining results." },
+      { q: "The chapter identifies that data mining can work on data streams and sensor data. Compared to mining static relational databases, the UNIQUE challenge of mining data streams is:", opts: ["Data streams are always smaller than relational databases.", "Data streams require data to be processed in real-time or near-real-time, often in a single pass, since data arrives continuously and cannot all be stored.", "Data streams only contain text data.", "Data streams do not require any preprocessing.", "Relational databases cannot be queried, while data streams can."], ans: 1, fb: "Data streams are vast and continuous, meaning algorithms often get only one pass to analyze the data." },
+      { q: "The Business Intelligence pyramid shows layers from data sources to decision making. If an organization invests only in the lower layers (data sources and preprocessing) but skips data mining and presentation, what is the MOST likely consequence?", opts: ["The organization will still make optimal data-driven decisions.", "The organization will have well-organized data but lack the ability to discover hidden patterns and actionable insights for strategic decisions.", "The organization will automatically perform classification and clustering.", "No data will be stored in the warehouse.", "End users will have direct access to advanced predictive models."], ans: 1, fb: "Without data mining and presentation, the raw infrastructure exists but the actionable knowledge is not extracted." },
+      { q: "A dataset contains customer records with attributes: age, income, purchase history, and region. A mining algorithm groups customers into 5 segments, maximizing within-segment similarity and minimizing between-segment similarity. Which principle and functionality does this describe?", opts: ["Minimizing intra-class similarity for classification", "Maximizing interclass similarity for discrimination", "Maximizing intra-class similarity and minimizing interclass similarity for cluster analysis", "Maximizing support and confidence for association rules", "Minimizing prediction error for regression"], ans: 2, fb: "Cluster analysis relies on high intra-class (within-cluster) similarity and low inter-class (between-cluster) similarity." },
+      { q: "A researcher collects web browsing logs where each session records the sequence of pages visited with timestamps. This data best exemplifies which combination of data set categories?", opts: ["Record (transaction data) and Ordered (sequential data)", "Graph/network and Spatial data", "Record (relational) and Graph/network", "Ordered (temporal) and Spatial/multimedia", "Record (data matrix) and Ordered (temporal)"], ans: 0, fb: "Web logs contain sequences of events over time, fitting both record and ordered sequential formats." },
+      { q: "Consider the attribute 'Customer Satisfaction' with values {Very Dissatisfied, Dissatisfied, Neutral, Satisfied, Very Satisfied}. A data analyst computes the arithmetic mean by coding these as 1–5. Which statement best describes the methodological concern?", opts: ["This is acceptable because ordinal data always has equal intervals between categories", "The coding assumes equal spacing between levels, which ordinal scales do not guarantee", "Ordinal attributes cannot be coded numerically under any circumstance", "The mean is invalid only if the distribution is skewed", "The concern applies only when fewer than three ordinal levels exist"], ans: 1, fb: "Ordinal data provides order but the differences between ranks are not guaranteed to be equal." },
+      { q: "An attribute records temperature in Celsius. Another records the same temperatures converted to Kelvin. Which statement is most accurate regarding their attribute types?", opts: ["Both are interval-scaled because they measure the same physical quantity", "Celsius is interval-scaled; Kelvin is ratio-scaled because Kelvin has a true zero point", "Both are ratio-scaled because temperature is always a ratio attribute", "Celsius is ordinal; Kelvin is interval-scaled", "Both are ratio-scaled because conversion between them is linear"], ans: 1, fb: "Celsius has an arbitrary zero, making it interval. Kelvin has an absolute zero, making it ratio." },
+      { q: "A purchase database records whether each of 10,000 users bought each of 50,000 products (1 = purchased, 0 = not purchased). Which characteristic of structured data is most critically relevant when analyzing this dataset?", opts: ["Resolution — patterns change at different time scales", "Distribution — the data is heavily skewed", "Sparsity — the vast majority of entries are zero and only presence is meaningful", "Dimensionality — 50,000 dimensions cause the curse of dimensionality", "Both C and D are equally critical, but for entirely independent reasons"], ans: 2, fb: "Most items aren't bought by most users, resulting in an extremely sparse matrix where only 1s matter." },
+      { q: "Given the dataset: 13, 15, 16, 16, 19, 20, 20, 21, 22, 22, 25, 25, 25, 25, 30, 33, 33, 35, 35, 35, 35, 36, 40, 45, 46, 52, 70. The mean is approximately 29.96. Which value is closest to the median?", opts: ["25", "26", "27.5", "25.5", "30"], ans: 0, fb: "There are 27 values. The median is the 14th value, which is 25." },
+      { q: "For the dataset in the previous question, the modes are 25 and 35 (each appearing 4 times). Given that the mean ≈ 29.96 and the median = 25, what does the relationship among these three measures suggest about the distribution's shape?", opts: ["Negatively skewed, because Mode > Median > Mean would hold", "Symmetric, because mean and median are close", "Positively skewed, because the mean is pulled above the median by high values like 70", "Bimodal distributions cannot be classified as skewed", "Negatively skewed, because the data has two modes below the mean"], ans: 2, fb: "When Mean > Median, it typically indicates a positively (right) skewed distribution caused by extreme high values." },
+      { q: "Using the grouped frequency data (age: 1–5: 200, 6–15: 450, 16–20: 300, 21–50: 1500, 51–80: 700, 81–110: 44), the interpolated median is calculated. What is the approximate median?", opts: ["29.15", "33.51", "36.00", "25.47", "21.00"], ans: 1, fb: "Total freq = 3194. Median item = 1597. First 3 classes sum to 950. Need 647 more from the 21-50 class (freq 1500). 21 + (647/1500)*29 = 33.51." },
+      { q: "In the grouped median calculation of the previous question, the class width used is 29 (from 21 to 50). If the median class were instead 51–80 (width = 29), which change in the data would cause this shift?", opts: ["Doubling the frequency of the 1–5 class", "Reducing the frequency of the 21–50 class from 1500 to 200", "Increasing the frequency of the 81–110 class to 2000", "Changing the class boundaries while keeping frequencies the same", "Adding a new class 111–130 with frequency 1000"], ans: 1, fb: "Reducing the earlier frequency pushes the halfway point (the median position) into a higher bin." },
+      { q: "A dataset of 10 ages {5, 12, 18, 25, 31, 40, 48, 55, 63, 70} has Q1 = 18, Q3 = 55, and IQR = 37. Using the 1.5×IQR rule, the lower fence is −37.5 and the upper fence is 110.5. Which conclusion is correct?", opts: ["The value 70 is an outlier because it exceeds Q3", "The value 5 is an outlier because it is far from the median", "No outliers exist because all values fall within [−37.5, 110.5]", "The value 70 is a mild outlier under the 3×IQR rule", "Outlier detection is inapplicable to datasets with fewer than 30 observations"], ans: 2, fb: "Since 5 and 70 are within the [-37.5, 110.5] range, there are no outliers using the standard 1.5×IQR rule." },
+      { q: "For the same dataset {5, 12, 18, 25, 31, 40, 48, 55, 63, 70}, the population standard deviation σ ≈ 20.12 and the sample standard deviation s ≈ 21.20. Why is the sample standard deviation larger?", opts: ["The sample formula uses n−1 in the denominator to correct for bias in estimating the population variance", "The sample standard deviation always exceeds the population value by exactly √(n/(n−1))", "The sample mean differs from the population mean, inflating deviations", "Rounding errors in the calculation cause the difference", "The sample formula squares larger residuals, increasing the result"], ans: 0, fb: "Bessel's correction (using n-1) compensates for the fact that a sample tends to underestimate the population's true variance." },
+      { q: "A 10% trimmed mean removes the bottom and top 10% of sorted values before averaging. For a dataset of 10 values sorted as {5, 12, 18, 25, 31, 40, 48, 55, 63, 70}, the 10% trimmed mean removes 1 value from each end. What is the trimmed mean?", opts: ["36.50", "36.70", "35.50", "37.25", "33.51"], ans: 0, fb: "Drop 5 and 70. Sum of remaining 8 values = 292. Mean = 292 / 8 = 36.50." },
+      { q: "Consider a weighted mean calculation where persons with ages {5, 12, 18, 25, 31, 40, 48, 55, 63, 70} have weights {2, 2, 2, 2, 3, 3, 4, 4, 4, 4}. The weighted mean is approximately 42.57. Compared to the unweighted mean of 36.7, the weighted mean is higher. What is the primary reason?", opts: ["Higher weights are assigned to older individuals, pulling the average upward", "The weights sum to 30 rather than 10, which inflates the mean", "Weighted means are always larger than arithmetic means", "The weighting eliminates the effect of the minimum value", "The weight distribution is symmetric, centering the mean on the median"], ans: 0, fb: "Applying larger weights to larger values shifts the center of gravity higher." },
+      { q: "'Order Date' is classified as an interval attribute while 'Total Amount ($)' is classified as a ratio attribute. Which operation is valid for ratio data but meaningless for interval data?", opts: ["Computing the difference between two values", "Sorting values from smallest to largest", "Stating that one value is twice another", "Computing the arithmetic mean", "Applying min-max normalization"], ans: 2, fb: "Multiplicative comparisons require an absolute zero point, which only ratio attributes possess." },
+      { q: "A term-frequency vector for Document 1 is (3, 0, 5, 0, 2, 6, 0, 2, 0, 2) and for Document 2 is (0, 7, 0, 2, 1, 0, 0, 3, 0, 0). These documents share nonzero values only in dimensions 5 and 8. What does this pattern most strongly suggest when computing cosine similarity?", opts: ["Cosine similarity will be exactly zero because the documents share no terms", "Cosine similarity will be very low because most term overlaps are in low-frequency positions", "Cosine similarity will be high because both vectors have similar magnitudes", "Cosine similarity cannot be computed for sparse vectors", "Cosine similarity depends only on shared nonzero dimensions, so it will be moderate"], ans: 1, fb: "The dot product relies entirely on the small overlapping dimensions, leading to a small numerator and low similarity." },
+      { q: "Given tuples A = (22, 1, 42, 10) and B = (20, 0, 36, 8), the Manhattan distance is 12 and the Euclidean distance is approximately 7.28. Why is the Manhattan distance always greater than or equal to the Euclidean distance?", opts: ["Manhattan distance counts each dimension independently, while Euclidean benefits from the Cauchy-Schwarz inequality reducing the combined measure", "Squaring and then taking the square root in Euclidean distance always amplifies differences", "Manhattan distance uses absolute values which are inherently larger", "Euclidean distance ignores dimensions with small differences", "This relationship holds only when all attribute differences are positive"], ans: 0, fb: "Geometrically, Manhattan traverses along grid edges (L1) while Euclidean is the direct hypotenuse (L2), satisfying the triangle inequality." },
+      { q: "For asymmetric binary attributes, the Jaccard coefficient is used instead of the simple matching coefficient. In a medical dataset with attributes for rare diseases (1 = present, 0 = absent), why is this approach preferred?", opts: ["Jaccard is computationally faster for binary data", "Joint absences (0,0) are uninformative for rare events and should not inflate similarity", "Simple matching cannot handle binary attributes", "Jaccard always yields higher similarity values, which is desirable in medicine", "Asymmetric binary attributes require distance metrics, not similarity measures"], ans: 1, fb: "For rare diseases, most people naturally share '0' (absence). Counting these zeros artificially balloons their similarity." },
+      { q: "A dataset has the following five-number summary: Min = 10, Q1 = 25, Median = 40, Q3 = 60, Max = 120. A value of 115 is observed. Using the 1.5×IQR outlier rule, which statement is correct?", opts: ["115 is an outlier because it exceeds Q3 + 1.5 × IQR = 112.5", "115 is not an outlier because it is less than the maximum", "115 is an outlier because it exceeds the median by more than 2 standard deviations", "115 is not an outlier because 1.5 × IQR = 52.5, and Q3 + 52.5 = 112.5, but the whisker extends to Max", "115 cannot be assessed without knowing the full dataset"], ans: 0, fb: "IQR = 35. 1.5 * 35 = 52.5. Upper limit = 60 + 52.5 = 112.5. Since 115 > 112.5, it is an outlier." },
+      { q: "Two objects have coordinates P₁ = (22, 1, 42, 10) and P₂ = (20, 0, 36, 8). The supremum distance (L∞) between them equals 6. This value corresponds to which attribute's absolute difference?", opts: ["First attribute: |22 − 20| = 2", "Second attribute: |1 − 0| = 1", "Third attribute: |42 − 36| = 6", "Fourth attribute: |10 − 8| = 2", "The average of all attribute differences"], ans: 2, fb: "Supremum distance is defined as the maximum absolute difference across all individual dimensions." },
+      { q: "When normalizing data points to unit norm (||x|| = 1) before computing Euclidean distance, the ranking of nearest neighbors may change compared to using unnormalized Euclidean distance. In which scenario would normalization most likely change the ranking?", opts: ["When all data points have identical magnitudes but different directions", "When data points vary greatly in magnitude but have similar directional components", "When the dataset has only two dimensions", "When all attributes are binary", "When the data is already centered at the origin"], ans: 1, fb: "Unit normalization projects all vectors onto a hypersphere, preserving direction but destroying magnitude differences." },
+      { q: "A positively skewed distribution has Mode < Median < Mean. A data analyst removes the single largest outlier from such a distribution. Which effect on the three central tendency measures is most likely?", opts: ["All three decrease, but the mean decreases the most", "The mode increases, the median stays the same, the mean decreases", "All three converge toward the mode", "The median decreases the most because it is sensitive to extreme values", "The mean decreases, the median may slightly decrease, and the mode is unlikely to change"], ans: 4, fb: "The mean is highly sensitive to outliers. The median might shift slightly if the count drops, but the mode usually remains unaffected." },
+      { q: "A document-term matrix records word frequencies across 500 documents and 10,000 unique terms. Which two characteristics of structured data are simultaneously most problematic for this dataset?", opts: ["Resolution and Distribution", "Sparsity and Dimensionality", "Dimensionality and Resolution", "Distribution and Sparsity", "Resolution and Sparsity"], ans: 1, fb: "Having 10,000 unique terms means high dimensionality, and most words won't appear in most documents, causing high sparsity." },
+      { q: "A researcher records 'Zip Code' as a numeric field. A colleague argues it should be treated as nominal. Which reasoning best supports the colleague's position?", opts: ["Zip codes contain digits, so they are numeric by definition", "Arithmetic operations on zip codes (e.g., averaging) produce meaningless results", "Zip codes can be sorted, which makes them ordinal", "Zip codes have too many unique values to be nominal", "Zip codes are discrete, and all discrete attributes are nominal"], ans: 1, fb: "Even though they are made of digits, zip codes act as labels. Averaging two zip codes yields no meaningful geographic midpoint." },
+      { q: "Consider two binary attributes: 'Gender (Male/Female)' and 'HIV Test Result (Positive/Negative).' Which statement correctly distinguishes their binary type?", opts: ["Both are symmetric because each has exactly two states", "Gender is asymmetric; HIV result is symmetric", "Gender is symmetric (both outcomes equally important); HIV result is asymmetric (positive is more important)", "Both are asymmetric because medical data always requires asymmetric treatment", "The distinction depends on sample size, not on the attribute's nature"], ans: 2, fb: "Gender is symmetric because neither male nor female is 'more important'. HIV positive is highly significant (asymmetric) compared to the common negative." },
+      { q: "The Minkowski distance with parameter q = 1 yields Manhattan distance, q = 2 yields Euclidean distance, and q → ∞ yields supremum distance. As q increases from 1 to ∞ for any fixed pair of points, how does the computed distance change?", opts: ["It always increases monotonically", "It always decreases monotonically", "It decreases monotonically, converging to the largest single-attribute difference", "It first increases then decreases", "It remains constant because the points do not change"], ans: 2, fb: "Higher q values suppress the effect of smaller dimensional differences. Thus, distance generally shrinks until bounded by the max single dimension difference." },
+      { q: "In a symmetric distribution, Mean = Median = Mode. A dataset is modified by adding a single extremely large value. Which ordering of central tendency measures is expected?", opts: ["Mean < Median < Mode", "Mode < Mean < Median", "Mode < Median < Mean", "Median < Mode < Mean", "Mean = Median < Mode"], ans: 2, fb: "The large outlier pulls the mean aggressively, shifting the median slightly, while leaving the mode basically unchanged. Hence Mode < Median < Mean." },
+      { q: "Given two objects X = (1, 0, 1, 0, 1) and Y = (1, 1, 0, 0, 1) with asymmetric binary attributes, where 1 is the important outcome. The contingency values are: q = 1 (both 1), r = 1 (X=1,Y=0), s = 1 (X=0,Y=1), t = 2 (both 0). What is the Jaccard coefficient?", opts: ["1/5 = 0.20", "1/3 ≈ 0.33", "2/5 = 0.40", "3/5 = 0.60", "1/4 = 0.25"], ans: 1, fb: "Jaccard = q/(q+r+s) = 1/(1+1+1) = 1/3." },
+      { q: "A dataset contains ages: {20, 22, 23, 25, 28, 30, 32, 35, 40, 200}. The mean is 45.5 while the median is 29. A data analyst applies a 10% trimmed mean by removing one value from each end. The resulting trimmed mean is approximately 31.9. What does the large gap between the original mean and trimmed mean primarily indicate?", opts: ["The dataset is too small for meaningful analysis", "The presence of an extreme outlier (200) disproportionately inflates the arithmetic mean", "The median is always a better measure than the mean", "The trimmed mean is biased because it discards valid data", "Trimming always reduces the mean regardless of data distribution"], ans: 1, fb: "Removing just one extreme value shifts the mean from 45.5 down to 31.9, proving the original mean was heavily inflated by the 200 outlier." },
+      { q: "For the grouped frequency table (1–5: 200, 6–15: 450, 16–20: 300, 21–50: 1500, 51–80: 700, 81–110: 44), the class widths are unequal (5, 10, 5, 30, 30, 30). Why does unequal class width complicate the interpolated median calculation?", opts: ["The formula cannot be applied to unequal class widths", "The width parameter directly scales the interpolation within the median class, so wider classes spread the estimate over a larger range", "Cumulative frequencies become meaningless with unequal widths", "Unequal widths always bias the median toward the widest class", "The median class cannot be identified when widths differ"], ans: 1, fb: "Linear interpolation assumes data is uniformly distributed within the given class width. A wider class dilutes this density estimate over a broader range." },
+      { q: "A boxplot for dataset A shows a box from 30 to 70 with median at 50. A boxplot for dataset B shows a box from 45 to 55 with median at 50. Both have the same min and max. What can be concluded?", opts: ["Dataset A has a larger mean than dataset B", "Dataset A has greater dispersion in the middle 50% of its data", "Dataset B has more outliers", "Both datasets have identical standard deviations", "Dataset B is positively skewed while A is symmetric"], ans: 1, fb: "The 'box' represents the Interquartile Range (IQR, middle 50%). A's IQR (40) is much larger than B's IQR (10), showing greater middle spread." },
+      { q: "The cosine similarity between vectors A = (3, 0, 5) and B = (0, 7, 0) equals zero because their dot product is zero. What geometric interpretation does this have?", opts: ["The vectors are identical in direction", "The vectors are parallel but opposite", "The vectors are orthogonal (perpendicular) in the vector space", "One vector is a scalar multiple of the other", "The similarity is undefined when any component is zero"], ans: 2, fb: "A dot product (and thus cosine) of 0 means the angle between the vectors is 90 degrees, i.e., they are orthogonal/perpendicular." },
+      { q: "An analyst computes both population variance (σ² = 404.61) and sample variance (s² = 449.57) for the same 10 data points. If the dataset size were increased from 10 to 10,000, what happens to the relationship between σ² and s²?", opts: ["s² becomes exactly equal to σ²", "s² and σ² diverge further as n increases", "s² remains larger, but the relative difference becomes negligible", "σ² exceeds s² for large samples", "Both become zero for sufficiently large n"], ans: 2, fb: "The difference is dividing by (n-1) vs (n). As n grows large (10,000), (n-1) is so close to (n) that the difference vanishes." },
+      { q: "Consider a transaction database where TID 3 contains {Beer, Coke, Diaper, Milk} and TID 5 contains {Coke, Diaper, Milk}. If we treat each transaction as a set, which measure best captures how similar TID 3 and TID 5 are?", opts: ["Euclidean distance on item counts", "Jaccard coefficient: |intersection| / |union| = 3/4 = 0.75", "Cosine similarity on binary vectors only", "Simple matching coefficient including all items in the database", "Manhattan distance on item frequencies"], ans: 1, fb: "Treating transactions as asymmetric binary sets means we care about the items they share relative to total unique items (Jaccard)." },
+      { q: "Daily sales data shows short-term fluctuations, monthly data reveals seasonal trends, and yearly data shows long-term growth. This exemplifies which characteristic of structured data?", opts: ["Dimensionality", "Distribution", "Sparsity", "Resolution", "Centrality"], ans: 3, fb: "Resolution refers to the scale or granularity of the data. Patterns that are visible at one resolution might be invisible at another." },
+      { q: "In the 'curse of dimensionality,' as the number of attributes grows very large, distances between all pairs of data points tend to become nearly equal. What practical consequence does this have for nearest-neighbor classification?", opts: ["Classification accuracy improves because more features provide more information", "All points become equidistant, making distance-based discrimination ineffective", "The algorithm runs faster due to sparse data", "Only Euclidean distance is affected; Manhattan distance remains reliable", "Dimensionality reduction becomes unnecessary above 1000 dimensions"], ans: 1, fb: "If all neighbors are roughly similar distances apart, the concept of a 'nearest' neighbor loses meaning, breaking the classification method." },
+      { q: "For the dataset {23, 23, 27, 27, 39, 41, 47, 49, 50, 52, 54, 54, 56, 57, 58, 58, 60, 61}, the mean age is approximately 44.78. The median (average of 9th and 10th values) is 51. Since Mean < Median, what does this suggest?", opts: ["The distribution is positively skewed", "The distribution is symmetric", "The distribution is negatively skewed — the lower values pull the mean below the median", "The data is bimodal, so skewness is irrelevant", "The mean is always less than the median for age data"], ans: 2, fb: "A Mean significantly smaller than the Median indicates a negative (left) skew, pulled down by low outliers or a left tail." },
+      { q: "An analyst needs to compare similarity between a patient who tested positive for 3 out of 100 rare disease markers and another who tested positive for 2, sharing 1 positive marker. Using simple matching, similarity = 96/100 = 0.96. Using Jaccard, similarity = 1/4 = 0.25. Which interpretation is more appropriate and why?", opts: ["Simple matching is better because it considers all 100 attributes", "Jaccard is more appropriate because the 96 joint absences inflate simple matching for rare events", "Both are equally valid; the analyst should report both", "Neither is appropriate for medical data", "Simple matching is preferred when most values are zero"], ans: 1, fb: "Because negative results are extremely common, counting them (simple matching) spuriously makes everyone look identical. Jaccard ignores shared absences." },
+      { q: "Given points P = (1.5, 1.7) and Q = (1.4, 1.6), the Euclidean distance is √(0.01 + 0.01) ≈ 0.141 and the Manhattan distance is 0.2. Now if all attribute values are multiplied by 100, what happens to these distances?", opts: ["Both distances are multiplied by 100", "Euclidean is multiplied by 10,000; Manhattan by 100", "Both remain unchanged because relative positions are preserved", "Euclidean is multiplied by 100; Manhattan by 200", "Only Manhattan distance scales linearly with the transformation"], ans: 0, fb: "Distance metrics are linearly scaled; if all coordinates scale by a factor k, distances between them also scale precisely by k." },
+      { q: "A dataset has five-number summary: Min = 2, Q1 = 15, Median = 15, Q3 = 40, Max = 85. The median equals Q1. What does this imply about the data distribution?", opts: ["The data is perfectly symmetric", "At least 25% of the data values are concentrated at or near the value 15, and the lower quarter is compressed", "The boxplot cannot be drawn because Q1 = Median", "The dataset contains no values between Min and Q1", "This situation is impossible and indicates a calculation error"], ans: 1, fb: "If median = Q1, the entire second quartile range is compressed around 15, meaning there's a heavy density or clustering of values exactly around 15." },
+      { q: "An analyst normalizes two data points to unit norm: X = (1.5, 1.7) becomes X' = (0.661, 0.749) and Y = (2.0, 1.9) becomes Y' = (0.725, 0.689). Euclidean distance between original points is ~0.539, but between normalized points is ~0.084. What explains this dramatic reduction?", opts: ["Normalization always reduces all distances to near zero", "The original points differed mainly in magnitude, not direction; normalization removed the magnitude component, leaving only the small directional difference", "The normalization formula contains an error", "Unit-norm vectors always have Euclidean distance less than 0.1", "The reduction is coincidental and specific to this pair"], ans: 1, fb: "Unit normalization projects points onto the unit circle, nullifying absolute magnitude sizes and preserving only the angle (direction)." },
+      { q: "A scatter plot of age vs. body fat percentage shows a generally upward trend with some dispersion. A q-q plot of the same two variables plots the quantiles of age against the quantiles of body fat. If the q-q plot forms an approximately straight line, what can be inferred?", opts: ["Age and body fat have a perfect linear correlation", "Both variables are uniformly distributed", "The two variables have similarly shaped distributions, though not necessarily the same center or spread", "There are no outliers in either variable", "A straight q-q line proves both variables are normally distributed"], ans: 2, fb: "A linear Q-Q plot indicates that the two datasets map to the same family of distributions (e.g. they share the same shape)." }
+    ];
+
+    let cur = 0, correct = 0, wrong = 0, answered = false;
+    let userAnswers = [];
+    let isReviewMode = false;
+    const letters = ['A', 'B', 'C', 'D', 'E'];
+    const topics = ["KDD Süreci","Veri Madenciliği İhtiyacı","Bilimsel Evrim","KDD Adımları","Veri Madenciliği Tanımı","Sınıflandırma ve Kümeleme","İş Zekası (BI)","Temel Sorunlar","Birliktelik Kuralları","Aşırı Öğrenme","Veritabanı Tarihçesi","Veri Analizi Hataları","Kümeleme","İleri Düzey Veriler","İş Zekası Yönetimi","Bilimsel Evrim","Sınıflandırma","Bilgi Çıkarımı","Temel Sorunlar","Çok Boyutlu Bakış","İstatistik vs VM","Ön İşleme Adımları","Uzman Sistemler","Karakterizasyon","Ayrımcılık Analizi","Veri Ambarları","Veri Bilimi Çapı","KDD Süreci","Örüntü Değerlendirme","Sınıflandırma vs Regresyon","Veritabanı Sistemleri","Aykırı Değer Tespiti","Uzamsal Veriler","OLAP","Veri Bilimi","Sınıflandırma","Veri Kalitesi","Veri Akışları","Veri Madenciliği ROI","Kümeleme", "Veri Seti Tipleri", "Nitelik Tipleri", "Aralık vs Oran (Interval/Ratio)", "Yapılandırılmış Veri", "Ortanca (Median)", "Çarpıklık (Skewness)", "Gruplandırılmış Medyan", "Medyan Sınıfı Değişimi", "Aykırı Değer Analizi", "Standart Sapma", "Kırpılmış Ortalama (Trimmed)", "Ağırlıklı Ortalama", "Oran vs Aralık Verisi", "Kosinüs Benzerliği", "Uzaklık Ölçütleri", "Jaccard Katsayısı", "Aykırı Değer Analizi", "Supremum Uzaklığı", "Veri Normalizasyonu", "Merkezi Eğilim Ölçüleri", "Seyreklik ve Boyutsallık", "Nominal Nitelikler", "Simetrik vs Asimetrik İkili", "Minkowski Uzaklığı", "Çarpıklık (Skewness)", "Jaccard Katsayısı Uygulaması", "Uç Değer ve Trimmed Mean", "Class Genişliği ve Medyan", "Kutu Grafiğinde (Boxplot) Kesikli Aralıklar", "Kosinüs ve Ortogonallik", "Örneklem vs Evren Varyansı", "İşlemlerde Jaccard Benzerliği", "Çözünürlük (Resolution)", "Boyutsallık Laneti (Curse of Dimensionality)", "Negatif Çarpıklık", "Nadir Olaylarda Benzerlik", "Büyüklük/Ölçekleme ve Mesafe", "Kartiller ve Yoğunluk", "Unit Norm Normalize İşlemi", "Q-Q Grafik Anlamı"];
+
+    function render() {
+      answered = false;
+      const q = qs[cur];
+      document.getElementById('q-card').classList.remove('fade-in');
+      void document.getElementById('q-card').offsetWidth;
+      document.getElementById('q-card').classList.add('fade-in');
+
+      const slideEl = document.getElementById('q-slide');
+      slideEl.textContent = cur < 40 ? "1. Slayt" : "2. Slayt";
+      
+      document.getElementById('q-counter').textContent = `Question ${cur + 1} of ${qs.length}`;
+      document.getElementById('q-label').textContent = `Question ${cur + 1}`;
+      document.getElementById('q-text').textContent = q.q;
+
+      const codeEl = document.getElementById('q-code');
+      if (q.code) { codeEl.textContent = q.code; codeEl.style.display = 'block'; }
+      else { codeEl.style.display = 'none'; }
+
+      const optsEl = document.getElementById('options');
+      optsEl.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.innerHTML = `<span class="ltr">${letters[i]}</span>${opt}`;
+        btn.onclick = () => pick(i);
+        optsEl.appendChild(btn);
+      });
+
+      document.getElementById('feedback').className = 'feedback-box';
+      document.getElementById('feedback').innerHTML = '';
+      
+      const nb = document.getElementById('next-btn');
+      if (isReviewMode) {
+        nb.onclick = showResult;
+        nb.textContent = '← Sonuçlara Dön';
+      } else {
+        nb.onclick = nextQ;
+      }
+
+      if (userAnswers[cur] !== undefined && userAnswers[cur] !== null) {
+        answered = true;
+        const btns = document.querySelectorAll('.option');
+        btns.forEach(b => b.disabled = true);
+        const fb = document.getElementById('feedback');
+        if (userAnswers[cur] === q.ans) {
+          btns[userAnswers[cur]].classList.add('correct-ans');
+          fb.className = 'feedback-box show ok';
+          fb.innerHTML = '<strong>Doğru!</strong> ' + q.fb;
+        } else {
+          btns[userAnswers[cur]].classList.add('wrong-ans');
+          btns[q.ans].classList.add('correct-ans');
+          fb.className = 'feedback-box show no';
+          fb.innerHTML = '<strong>Yanlış.</strong> Doğru cevap: <strong>' + letters[q.ans] + '</strong>. ' + q.fb;
+        }
+        nb.className = 'next-btn show';
+      } else {
+        nb.className = 'next-btn';
+      }
+
+      document.getElementById('prog').style.width = ((cur + 1) / qs.length * 100) + '%';
+    }
+
+    function pick(i) {
+      if (answered) return;
+      answered = true;
+      userAnswers[cur] = i;
+      const q = qs[cur];
+      const btns = document.querySelectorAll('.option');
+      btns.forEach(b => b.disabled = true);
+
+      const fb = document.getElementById('feedback');
+      if (i === q.ans) {
+        btns[i].classList.add('correct-ans');
+        fb.className = 'feedback-box show ok';
+        fb.innerHTML = '<strong>Correct!</strong> ' + q.fb;
+        correct++;
+        document.getElementById('pill-c').textContent = '✓ ' + correct;
+      } else {
+        btns[i].classList.add('wrong-ans');
+        btns[q.ans].classList.add('correct-ans');
+        fb.className = 'feedback-box show no';
+        fb.innerHTML = '<strong>Wrong.</strong> The correct answer is <strong>' + letters[q.ans] + '</strong>. ' + q.fb;
+        wrong++;
+        document.getElementById('pill-w').textContent = '✗ ' + wrong;
+      }
+
+      const nb = document.getElementById('next-btn');
+      nb.className = 'next-btn show';
+      nb.textContent = cur < qs.length - 1 ? 'Next →' : 'See Results →';
+    }
+
+    function nextQ() {
+      cur++;
+      if (cur >= qs.length) { showResult(); return; }
+      render();
+    }
+
+    function showResult() {
+      document.getElementById('q-card').style.display = 'none';
+      document.getElementById('result-card').classList.add('show');
+      const pct = Math.round(correct / qs.length * 100);
+      const scoreEl = document.getElementById('res-score');
+      scoreEl.textContent = pct + '%';
+      if (pct >= 80) scoreEl.style.color = '#4ADE80';
+      else if (pct >= 60) scoreEl.style.color = '#FBBF24';
+      else scoreEl.style.color = '#F87171';
+
+      document.getElementById('res-c').textContent = correct;
+      document.getElementById('res-w').textContent = wrong;
+
+      let msg, detail;
+      if (pct >= 80) { msg = 'Excellent work!'; detail = 'You have a strong grasp of Data Mining fundamentals. You are ready for the next chapter!'; }
+      else if (pct >= 60) { msg = 'Good effort!'; detail = 'Solid understanding with some gaps. Review the questions you missed and try again.'; }
+      else { msg = 'Keep studying!'; detail = 'Re-read Chapter 1 and focus on the KDD process, data mining functions, and major issues. You can do it!'; }
+      document.getElementById('res-msg').textContent = msg;
+      document.getElementById('res-detail').textContent = detail;
+
+      const anBox = document.getElementById('analysis-box');
+      const wList = document.getElementById('wrong-list');
+      wList.innerHTML = '';
+      if (wrong > 0) {
+        anBox.style.display = 'block';
+        qs.forEach((q, idx) => {
+          if (userAnswers[idx] !== null && userAnswers[idx] !== q.ans) {
+            wList.innerHTML += `<div class="wrong-item">
+                <div class="wrong-info">
+                  <div class="w-qnum">Soru ${idx + 1}</div>
+                  <div class="w-topic">Konu: ${topics[idx]}</div>
+                </div>
+                <button class="w-btn" onclick="reviewQ(${idx})">Soruyu Gör</button>
+              </div>`;
+          }
+        });
+      } else {
+        anBox.style.display = 'none';
+      }
+    }
+
+    function reviewQ(i) {
+      isReviewMode = true;
+      cur = i;
+      document.getElementById('result-card').classList.remove('show');
+      document.getElementById('q-card').style.display = 'block';
+      render();
+    }
+
+    function restart() {
+      cur = 0; correct = 0; wrong = 0;
+      userAnswers = new Array(qs.length).fill(null);
+      isReviewMode = false;
+      document.getElementById('pill-c').textContent = '✓ 0';
+      document.getElementById('pill-w').textContent = '✗ 0';
+      document.getElementById('q-card').style.display = 'block';
+      document.getElementById('result-card').classList.remove('show');
+      render();
+    }
+
+    function startQuiz() {
+      userAnswers = new Array(qs.length).fill(null);
+      isReviewMode = false;
+      document.getElementById('intro-card').style.display = 'none';
+      document.getElementById('top-bar').style.display = 'flex';
+      document.getElementById('progress-wrap').style.display = 'block';
+      document.getElementById('q-card').style.display = 'block';
+      render();
+    }
+  </script>
+</body>
+
+</html>
